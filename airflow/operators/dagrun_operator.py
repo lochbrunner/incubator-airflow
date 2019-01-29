@@ -26,8 +26,9 @@ import json
 
 
 class DagRunOrder(object):
-    def __init__(self, run_id=None, payload=None):
+    def __init__(self, run_id=None, execution_date=None, payload=None):
         self.run_id = run_id
+        self.execution_date = execution_date
         self.payload = payload
 
 
@@ -67,14 +68,17 @@ class TriggerDagRunOperator(BaseOperator):
         self.execution_date = execution_date
 
     def execute(self, context):
-        dro = DagRunOrder(run_id='trig__' + timezone.utcnow().isoformat())
+        execution_date = self.execution_date if self.execution_date not None
+        else timezone.utcnow()
+        dro = DagRunOrder(run_id='trig__' + timezone.utcnow().isoformat(),
+                          execution_date=execution_date)
         if self.python_callable is not None:
             dro = self.python_callable(context, dro)
         if dro:
             trigger_dag(dag_id=self.trigger_dag_id,
                         run_id=dro.run_id,
                         conf=json.dumps(dro.payload),
-                        execution_date=self.execution_date,
+                        execution_date=execution_date,
                         replace_microseconds=False)
         else:
             self.log.info("Criteria not met, moving on")
