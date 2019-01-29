@@ -77,7 +77,7 @@ class KubernetesPodOperator(BaseOperator):
         XCom when the container completes.
     :type xcom_push: bool
     """
-    template_fields = ('cmds', 'arguments', 'env_vars', 'config_file')
+    template_fields = ('cmds', 'arguments', 'env_vars', 'config_file', 'image')
 
     def execute(self, context):
         try:
